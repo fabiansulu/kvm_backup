@@ -1,0 +1,2 @@
+{"timestamp": "2025-07-29T19:55:53.125255", "level": "INFO", "logger": "test", "message": "Test log message", "module": "test_system", "function": "<module>", "line": 24, "taskName": null}
+{"timestamp": "2025-07-29T19:56:35.046427", "level": "INFO", "logger": "test", "message": "Test log message", "module": "test_system", "function": "<module>", "line": 24, "taskName": null}
