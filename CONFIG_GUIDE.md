@@ -15,6 +15,7 @@ python3 app_backup_kvm/kvm_monitor.py
 - **Interface responsive** avec design entreprise
 - **Monitoring temps réel** des VMs KVM
 - **Gestion des snapshots** et sauvegardes
+- **⏰ NOUVEAU : Sauvegardes programmées**
 
 ### Fonctionnalités disponibles
 
@@ -22,7 +23,89 @@ python3 app_backup_kvm/kvm_monitor.py
 - 💻 **Liste complète des VMs** avec état actuel  
 - 📸 **Création de snapshots** en un clic
 - 💾 **Gestion des sauvegardes** intégrée
+- ⏰ **Sauvegardes programmées** avec planification flexible
 - 🔄 **Actualisation automatique** toutes les 30 secondes
+
+## ⏰ Sauvegardes Programmées - NOUVEAU !
+
+### Interface Web de Planification
+
+1. **Accédez à l'interface web** : http://localhost:8080
+2. **Section "Sauvegardes Programmées"** avec bouton "➕ Nouvelle Planification"
+3. **Configurez votre planning** :
+   - Nom de la planification
+   - VMs à sauvegarder (sélection multiple)
+   - Type : Quotidien, Hebdomadaire, Mensuel
+   - Heure d'exécution
+   - Mode : Incrémentiel, Complet, Snapshot
+
+### Types de Planification
+
+**📅 Quotidien :**
+```
+Heure : 02:00 (format 24h)
+Exécution : Tous les jours à 2h du matin
+```
+
+**📅 Hebdomadaire :**
+```
+Jour + Heure : Dimanche 03:00
+Exécution : Chaque dimanche à 3h du matin
+```
+
+**📅 Mensuel :**
+```
+Jour + Heure : 15:04:00 (15ème jour à 4h du matin)
+Exécution : Le 15 de chaque mois à 4h
+```
+
+### Gestion CLI des Sauvegardes Programmées
+
+```bash
+cd /home/authentik/backup-kvm/app_backup_kvm
+
+# Lister les sauvegardes programmées
+python3 schedule_manager.py list
+
+# Ajouter une sauvegarde quotidienne
+python3 schedule_manager.py add "Sauvegarde Quotidienne" --vms mainserver onlyoffice --type daily --time "02:00" --mode incremental
+
+# Ajouter une sauvegarde hebdomadaire complète
+python3 schedule_manager.py add "Sauvegarde Hebdo" --vms mainserver --type weekly --time "sunday:03:00" --mode full
+
+# Ajouter une sauvegarde mensuelle
+python3 schedule_manager.py add "Sauvegarde Mensuelle" --vms mainserver onlyoffice --type monthly --time "1:04:00" --mode full
+
+# Désactiver une sauvegarde
+python3 schedule_manager.py disable <ID_SAUVEGARDE>
+
+# Supprimer une sauvegarde
+python3 schedule_manager.py remove <ID_SAUVEGARDE>
+
+# Voir les sauvegardes dues
+python3 schedule_manager.py due
+```
+
+### Exemples de Configuration Typiques
+
+**🏢 Configuration Entreprise :**
+```bash
+# Sauvegarde incrémentielle quotidienne à 2h
+python3 schedule_manager.py add "Daily Backup" --vms mainserver onlyoffice --type daily --time "02:00" --mode incremental
+
+# Sauvegarde complète hebdomadaire le dimanche à 3h
+python3 schedule_manager.py add "Weekly Full" --vms mainserver onlyoffice --type weekly --time "sunday:03:00" --mode full
+
+# Snapshot mensuel le 1er à 4h
+python3 schedule_manager.py add "Monthly Snapshot" --vms mainserver onlyoffice --type monthly --time "1:04:00" --mode snapshot
+```
+
+### Monitoring en Temps Réel
+
+- **Interface web** : Section dédiée avec statut des planifications
+- **Actualisation automatique** : Toutes les minutes
+- **Notifications visuelles** : Status activé/désactivé
+- **Historique** : Dernière exécution et prochaine planifiée
 
 ## Configuration avancée
 

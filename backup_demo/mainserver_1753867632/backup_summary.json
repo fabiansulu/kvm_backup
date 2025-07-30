@@ -1,0 +1,11 @@
+{
+  "vm_name": "mainserver",
+  "backup_time": "2025-07-30T11:27:19.413660",
+  "xml_exported": "backup_demo/mainserver_1753867632/mainserver.xml",
+  "disk_files": [
+    "/var/lib/libvirt/images/mainserver.qcow2"
+  ],
+  "total_size_bytes": 26847870976,
+  "backup_mode": "local_demo",
+  "snapshot_used": "backup-1753867634"
+}

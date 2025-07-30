@@ -233,6 +233,11 @@ class SSHClient:
                 
                 result = subprocess.run(rsync_cmd, capture_output=True, text=True)
                 
+                print(f"Rsync command: {' '.join(rsync_cmd)}")
+                print(f"Rsync exit code: {result.returncode}")
+                print(f"Rsync stdout: {result.stdout}")
+                print(f"Rsync stderr: {result.stderr}")
+                
                 if result.returncode == 0:
                     self.logger.info("Rsync transfer completed", 
                                    local_path=local_path, remote_path=remote_path)

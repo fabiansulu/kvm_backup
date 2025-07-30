@@ -1,26 +1,36 @@
 # KVM Backup System
 
-Une solution moderne de sauvegarde pour machines virtuelles KVM/libvirt, développée en Python.
+Une solution moderne et complète de sauvegarde pour machines virtuelles KVM/libvirt, développée en Python avec interface web de monitoring et planification automatique.
 
-## 🚀 Fonctionnalités
+## 🚀 Fonctionnalités Principales
 
-### Sauvegardes sans interruption de service
+### 💾 Sauvegardes Avancées
 - **Snapshots libvirt** : Sauvegarde sans arrêter les VMs
 - **Trois modes** : Complet, Incrémentiel, Synchronisation
+- **Transfert SSH** automatique vers serveur distant
 - **Gestion d'erreurs robuste** avec restauration automatique
 - **Logs structurés** JSON pour faciliter le debugging
 
-### Interface moderne
-- **CLI riche** avec Typer et Rich (couleurs, tableaux, barres de progression)
-- **API REST** avec FastAPI pour intégration web
-- **Configuration flexible** via fichiers YAML/JSON ou variables d'environnement
+### ⏰ Planification Automatique - NOUVEAU !
+- **Sauvegardes programmées** : Quotidiennes, hebdomadaires, mensuelles
+- **Interface web intuitive** pour créer et gérer les planifications
+- **CLI professionnel** pour administration avancée
+- **Scheduler intégré** avec exécution automatique en arrière-plan
+- **Monitoring temps réel** des tâches programmées
 
-### Fonctionnalités avancées
+### 🌐 Interface Moderne
+- **Dashboard web** responsive avec design entreprise
+- **Monitoring temps réel** des VMs et sauvegardes
+- **CLI riche** avec Typer et Rich (couleurs, tableaux, barres de progression)
+- **API REST** avec FastAPI pour intégration complète
+
+### 🔧 Fonctionnalités Avancées
 - **Tests automatisés** avec pytest
 - **Sauvegarde parallèle** de plusieurs VMs
 - **Retention automatique** des anciennes sauvegardes
 - **Scripts pré/post-sauvegarde** personnalisables
 - **Métriques et monitoring** intégrés
+- **Configuration flexible** via fichiers .env ou variables d'environnement
 
 ## 📦 Installation
 
@@ -61,9 +71,103 @@ sudo mkdir -p /var/log/kvm-backup
 sudo chown $USER:$USER /var/log/kvm-backup
 ```
 
-## 🎯 Utilisation
+## 🚀 Démarrage Rapide
 
-### Interface en ligne de commande
+### 1️⃣ Lancement du Système Complet
+```bash
+# Démarrer l'interface web avec scheduler intégré
+python3 kvm_monitor.py
+
+# 🌐 Interface disponible : http://localhost:8080
+# ⏰ Scheduler automatique : Activé
+# 📊 Monitoring temps réel : Disponible
+```
+
+### 2️⃣ Première Sauvegarde via Interface Web
+1. **Accédez à** http://localhost:8080
+2. **Section "Machines Virtuelles"**
+3. **Cliquez "💾 Sauvegarder"** sur une VM
+4. **Suivez le progrès** dans "Tâches de sauvegarde"
+
+### 3️⃣ Créer une Sauvegarde Programmée
+1. **Section "Sauvegardes Programmées"**
+2. **Bouton "➕ Nouvelle Planification"**
+3. **Configurez** : nom, VMs, type (quotidien/hebdomadaire/mensuel), heure
+4. **Sauvegarde automatique** selon la planification
+
+### 4️⃣ Alternative CLI
+```bash
+# Sauvegarde immédiate
+./main.py backup mainserver onlyoffice --mode incremental
+
+# Planification via CLI
+python3 schedule_manager.py add "Daily Backup" \
+  --vms mainserver onlyoffice \
+  --type daily --time "02:00" \
+  --mode incremental
+```
+
+## 🎯 Utilisation Détaillée
+
+### 🌐 Interface Web de Monitoring (Recommandée)
+
+#### Démarrage
+```bash
+# Démarrer le serveur de monitoring
+python3 kvm_monitor.py
+
+# Accès à l'interface
+# URL: http://localhost:8080
+```
+
+#### Fonctionnalités Web
+- **Dashboard temps réel** : Statut système et VMs
+- **Gestion des VMs** : Snapshots et sauvegardes en un clic
+- **Sauvegardes programmées** : Interface complète de planification
+- **Monitoring des tâches** : Suivi en temps réel des opérations
+- **Actualisation automatique** : Données mises à jour automatiquement
+
+### ⏰ Sauvegardes Programmées
+
+#### Interface Web
+1. Accédez à http://localhost:8080
+2. Section "Sauvegardes Programmées"
+3. Bouton "➕ Nouvelle Planification"
+4. Configurez : nom, VMs, type, heure, mode
+
+#### Gestionnaire CLI
+```bash
+# Lister les sauvegardes programmées
+python3 schedule_manager.py list
+
+# Créer une sauvegarde quotidienne
+python3 schedule_manager.py add "Daily Backup" \
+  --vms mainserver onlyoffice \
+  --type daily --time "02:00" \
+  --mode incremental
+
+# Créer une sauvegarde hebdomadaire
+python3 schedule_manager.py add "Weekly Full" \
+  --vms mainserver onlyoffice \
+  --type weekly --time "sunday:03:00" \
+  --mode full
+
+# Créer une sauvegarde mensuelle
+python3 schedule_manager.py add "Monthly Snapshot" \
+  --vms mainserver \
+  --type monthly --time "1:04:00" \
+  --mode snapshot
+
+# Gérer les planifications
+python3 schedule_manager.py enable <id>      # Activer
+python3 schedule_manager.py disable <id>     # Désactiver
+python3 schedule_manager.py remove <id>      # Supprimer
+
+# Voir les sauvegardes dues
+python3 schedule_manager.py due
+```
+
+### 💻 Interface en ligne de commande
 
 #### Lister les VMs
 ```bash
@@ -219,7 +323,22 @@ echo "KVM_BACKUP_SSH_KEY_FILE=/home/$USER/.ssh/kvm-backup-key" >> .env
 
 ## 📊 Logs et Monitoring
 
-### Logs structurés
+### 🌐 Interface Web de Monitoring
+```bash
+# Démarrer l'interface de monitoring
+python3 kvm_monitor.py
+
+# Accès au dashboard : http://localhost:8080
+```
+
+**Fonctionnalités du dashboard :**
+- 📊 Statut système en temps réel
+- 💻 Liste des VMs avec états
+- 📈 Tâches de sauvegarde en cours
+- ⏰ Sauvegardes programmées avec prochaines exécutions
+- 🔄 Actualisation automatique toutes les 30 secondes
+
+### 📝 Logs Structurés
 ```bash
 # Suivre les logs en temps réel
 tail -f /var/log/kvm-backup/kvm-backup.log
@@ -229,6 +348,21 @@ grep '"vm_name":"vm1"' /var/log/kvm-backup/kvm-backup.log | jq .
 
 # Filtrer par erreurs
 grep '"level":"ERROR"' /var/log/kvm-backup/kvm-backup.log | jq .
+
+# Logs du scheduler
+grep '"logger":"kvm_backup.scheduler"' /var/log/kvm-backup/kvm-backup.log | jq .
+```
+
+### 🔍 Tests et Validation
+```bash
+# Tester le système de planification
+python3 test_scheduler.py
+
+# Tester une sauvegarde simple
+./main.py backup vm1 --dry-run
+
+# Vérifier la configuration
+./main.py config
 ```
 
 ### Métriques
@@ -251,21 +385,54 @@ python -m pytest --cov=app_backup_kvm test_kvm_backup.py
 python -m pytest test_kvm_backup.py::TestIntegration -v
 ```
 
-## 📅 Automatisation avec Cron
+## ⏰ Automatisation Avancée
+
+### 🎯 Scheduler Intégré (Recommandé)
+Le système dispose d'un scheduler intégré qui remplace avantageusement cron :
+
+```bash
+# Démarrer le système avec scheduler automatique
+python3 kvm_monitor.py
+
+# Le scheduler vérifie automatiquement les planifications toutes les minutes
+# Interface web : http://localhost:8080 pour gérer les planifications
+```
+
+**Avantages du scheduler intégré :**
+- ✅ Interface web intuitive
+- ✅ Gestion d'erreurs robuste avec reprogrammation
+- ✅ Logs structurés et monitoring
+- ✅ Configuration persistante
+- ✅ Pas de configuration cron nécessaire
+
+### 📅 Alternative Cron (Manuel)
+Si vous préférez cron pour certaines tâches spécifiques :
 
 ```bash
 # Éditer le crontab
 sudo crontab -e
 
-# Sauvegardes automatiques
+# Sauvegardes automatiques via CLI
 # Incrémentielle quotidienne à 2h
-0 2 * * * /home/authentik/backup-kvm/app_backup_kvm/main.py backup vm1 vm2 vm3 --mode incremental
+0 2 * * * cd /home/authentik/backup-kvm/app_backup_kvm && ./main.py backup vm1 vm2 vm3 --mode incremental
 
-# Complète hebdomadaire le dimanche à 1h
-0 1 * * 0 /home/authentik/backup-kvm/app_backup_kvm/main.py backup vm1 vm2 vm3 --mode full
+# Complète hebdomadaire le dimanche à 1h  
+0 1 * * 0 cd /home/authentik/backup-kvm/app_backup_kvm && ./main.py backup vm1 vm2 vm3 --mode full
 
 # Nettoyage mensuel des anciens snapshots
-0 3 1 * * /home/authentik/backup-kvm/app_backup_kvm/main.py cleanup-snapshots --older-than 30
+0 3 1 * * cd /home/authentik/backup-kvm/app_backup_kvm && ./main.py cleanup-snapshots --older-than 30
+```
+
+### 🔄 Gestion des Planifications
+```bash
+# Via interface web (recommandé)
+# http://localhost:8080 → Section "Sauvegardes Programmées"
+
+# Via CLI
+python3 schedule_manager.py list                    # Lister
+python3 schedule_manager.py add "Name" --vms vm1    # Ajouter
+python3 schedule_manager.py enable <id>             # Activer
+python3 schedule_manager.py disable <id>            # Désactiver
 ```
 
 ## 🔒 Sécurité
@@ -289,17 +456,44 @@ sudo chown authentik:authentik /backup/kvm
 sudo chmod 750 /backup/kvm
 ```
 
-## 🆚 Avantages vs Script Bash original
+## 🆚 Avantages vs Solutions Traditionnelles
 
-| Fonctionnalité | Script Bash | Python App |
+| Fonctionnalité | Script Bash | Python App KVM Backup |
 |---|---|---|
 | **Snapshots sans arrêt VM** | ❌ | ✅ |
-| **Interface web** | ❌ | ✅ |
-| **API REST** | ❌ | ✅ |
-| **Logs structurés** | ❌ | ✅ |
-| **Tests automatisés** | ❌ | ✅ |
-| **Gestion d'erreurs** | ⚠️ Basic | ✅ Robuste |
-| **Configuration flexible** | ⚠️ Variables | ✅ Multi-format |
+| **Interface web moderne** | ❌ | ✅ Dashboard complet |
+| **Sauvegardes programmées** | ⚠️ Cron manuel | ✅ Scheduler intégré |
+| **Monitoring temps réel** | ❌ | ✅ Interface web |
+| **API REST** | ❌ | ✅ FastAPI |
+| **Logs structurés** | ❌ | ✅ JSON + monitoring |
+| **Tests automatisés** | ❌ | ✅ pytest |
+| **Gestion d'erreurs** | ⚠️ Basic | ✅ Robuste + reprogrammation |
+| **Configuration flexible** | ⚠️ Variables | ✅ .env + interface web |
+| **Transfert SSH optimisé** | ⚠️ rsync simple | ✅ rsync + compression |
+| **Interface planification** | ❌ | ✅ Web + CLI professionnel |
+| **Persistance planning** | ❌ | ✅ JSON + backup auto |
+
+### 🎯 Pourquoi Choisir Cette Solution
+
+**🚀 Facilité d'utilisation :**
+- Interface web intuitive pour tous les utilisateurs
+- CLI riche pour les administrateurs avancés
+- Configuration via interface ou fichiers
+
+**⚡ Performance :**
+- Snapshots sans downtime des VMs
+- Transferts rsync optimisés avec compression
+- Exécution parallèle possible
+
+**🔒 Fiabilité :**
+- Gestion d'erreurs complète avec reprogrammation automatique
+- Logs structurés pour diagnostic facile
+- Tests automatisés pour validation
+
+**📈 Évolutivité :**
+- API REST pour intégration dans d'autres systèmes
+- Architecture modulaire facilement extensible
+- Support de multiples serveurs de destination
 | **Parallélisation** | ❌ | ✅ |
 | **Métriques** | ❌ | ✅ |
 | **Facilité de maintenance** | ⚠️ | ✅ |
@@ -320,9 +514,9 @@ Le système est prêt pour une interface web complète :
 Frontend (React/Vue) → API REST (FastAPI) → Core Python → libvirt/SSH
 ```
 
-## 🐛 Résolution de problèmes
+## 🐛 Résolution de Problèmes
 
-### Erreurs communes
+### 🔧 Erreurs Communes
 
 **Connexion libvirt échoue :**
 ```bash
@@ -340,6 +534,44 @@ newgrp libvirt
 ssh authentik@192.168.26.27
 
 # Vérifier les clés
+ssh-add ~/.ssh/kvm-backup-key
+```
+
+**Interface web inaccessible :**
+```bash
+# Vérifier si le serveur fonctionne
+ps aux | grep kvm_monitor
+
+# Vérifier le port
+netstat -tlnp | grep 8080
+
+# Redémarrer le serveur
+python3 kvm_monitor.py
+```
+
+**Sauvegardes programmées ne s'exécutent pas :**
+```bash
+# Vérifier le scheduler
+python3 schedule_manager.py list
+
+# Voir les sauvegardes dues
+python3 schedule_manager.py due
+
+# Vérifier les logs
+tail -f /var/log/kvm-backup/kvm-backup.log | grep scheduler
+```
+
+### 📋 Tests de Validation
+```bash
+# Tester le système complet
+python3 test_scheduler.py
+
+# Tester une sauvegarde
+./main.py backup vm1 --dry-run
+
+# Vérifier la configuration
+./main.py config
+```
 ssh-add -l
 ```
 
@@ -350,15 +582,51 @@ virsh domblklist vm1
 # Les disques doivent être en qcow2
 ```
 
-## 📞 Support
+## � Documentation Complète
 
-- **Logs** : `/var/log/kvm-backup/`
-- **Configuration** : `.env` dans le répertoire app
-- **Tests** : `python -m pytest test_kvm_backup.py -v`
-- **API docs** : `http://localhost:8000/docs` (quand le serveur tourne)
+- **📖 [Guide de Configuration](CONFIG_GUIDE.md)** - Configuration détaillée et exemples
+- **🆕 [Nouvelles Fonctionnalités](NOUVELLES_FONCTIONNALITES.md)** - Sauvegardes programmées
+- **📝 Logs** : `/var/log/kvm-backup/`
+- **⚙️ Configuration** : `.env` dans le répertoire app
+- **🧪 Tests** : `python3 test_scheduler.py` et `python -m pytest test_kvm_backup.py -v`
+
+## 🌐 Interfaces Disponibles
+
+- **Interface Web** : http://localhost:8080 (Dashboard principal)
+- **API REST** : http://localhost:8000/docs (Documentation interactive)
+- **CLI Backup** : `./main.py --help`
+- **CLI Planification** : `python3 schedule_manager.py --help`
+
+## 📞 Support et Maintenance
+
+### Surveillance Système
+```bash
+# Vérifier le statut du service
+ps aux | grep kvm_monitor
+
+# Surveiller les logs en temps réel
+tail -f /var/log/kvm-backup/kvm-backup.log
+
+# Vérifier l'espace disque du serveur distant
+python3 -c "from ssh_client import SSHClient; ssh = SSHClient('192.168.26.27', 'authentik', 'server'); ssh.connect(); print(ssh.get_disk_usage('/home/authentik/backup-kvm'))"
+```
+
+### Maintenance Planifiée
+- **Nettoyage automatique** : Configuré via interface web
+- **Rotation des logs** : Gestion automatique
+- **Monitoring espace disque** : Intégré au dashboard
+- **Tests réguliers** : Utiliser `python3 test_scheduler.py`
 
 ---
 
-**Prêt pour la production !** 🚀
+## 🏆 **Système KVM Backup Complet - Production Ready !**
 
-Cette version Python moderne remplace complètement votre script bash avec des fonctionnalités avancées et une architecture extensible pour une interface web future.
+**✅ Interface web moderne avec monitoring temps réel**  
+**✅ Sauvegardes programmées automatiques**  
+**✅ Transfert SSH sécurisé vers serveur distant**  
+**✅ CLI professionnel pour administration**  
+**✅ Architecture modulaire et extensible**
+
+Cette solution moderne remplace complètement les scripts bash traditionnels avec une interface intuitive et des fonctionnalités de niveau entreprise.
+
+**🚀 Prêt pour déploiement en production !**

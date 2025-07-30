@@ -2,6 +2,7 @@
 Core backup manager with snapshot-based backups
 """
 import asyncio
+import os
 import shutil
 import tempfile
 from datetime import datetime, timedelta
@@ -284,13 +285,54 @@ class BackupManager:
             remote_config_path = f"{config_dir}/{vm_info.name}_config.xml"
             
             if not job.dry_run:
-                ssh_client.rsync_transfer(
-                    vm_info.config_path, remote_config_path,
-                    options=['-avz'], dry_run=job.dry_run
+                # Use sudo to copy protected libvirt files
+                success = await self._secure_file_transfer(
+                    vm_info.config_path, remote_config_path, ssh_client
                 )
+                if success:
+                    result['files_backed_up'].append(f"config:{remote_config_path}")
+                    # Get file size with sudo
+                    import subprocess
+                    size_result = subprocess.run(['sudo', 'stat', '-c', '%s', vm_info.config_path], 
+                                               capture_output=True, text=True)
+                    if size_result.returncode == 0:
+                        result['size_bytes'] += int(size_result.stdout.strip())
+            else:
+                result['files_backed_up'].append(f"config:{remote_config_path}")
+    
+    async def _secure_file_transfer(self, local_path: str, remote_path: str, ssh_client: SSHClient) -> bool:
+        """Transfer protected files using sudo to copy to temp location first"""
+        import tempfile
+        import subprocess
+        
+        try:
+            # Create a temporary file accessible to current user
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                tmp_path = tmp_file.name
             
-            result['files_backed_up'].append(f"config:{remote_config_path}")
-            result['size_bytes'] += Path(vm_info.config_path).stat().st_size
+            # Copy the protected file to temp location with sudo
+            copy_result = subprocess.run(['sudo', 'cp', local_path, tmp_path], 
+                                       capture_output=True, text=True)
+            if copy_result.returncode != 0:
+                self.logger.error("Failed to copy protected file", 
+                                local_path=local_path, error=copy_result.stderr)
+                return False
+            
+            # Make temp file readable by current user
+            subprocess.run(['sudo', 'chown', f"{os.getuid()}:{os.getgid()}", tmp_path])
+            
+            # Transfer the temp file via SSH
+            success = ssh_client.rsync_transfer(tmp_path, remote_path, options=['-avz'])
+            
+            # Clean up temp file
+            Path(tmp_path).unlink(missing_ok=True)
+            
+            return success
+            
+        except Exception as e:
+            self.logger.error("Secure file transfer failed", 
+                            local_path=local_path, remote_path=remote_path, error=str(e))
+            return False
     
     async def _backup_vm_disks(self, job: BackupJob, vm_info: VMInfo, 
                               ssh_client: SSHClient, result: Dict[str, Any]) -> None:
@@ -327,15 +369,24 @@ class BackupManager:
             
             remote_disk_path = f"{images_dir}/{disk_file.name}"
             
-            # Calculate original size
-            disk_size = disk_file.stat().st_size
-            result['size_bytes'] += disk_size
+            # Calculate original size using sudo for protected files
+            import subprocess
+            size_result = subprocess.run(['sudo', 'stat', '-c', '%s', str(disk_file)], 
+                                       capture_output=True, text=True)
+            if size_result.returncode == 0:
+                disk_size = int(size_result.stdout.strip())
+                result['size_bytes'] += disk_size
+            else:
+                self.logger.warning("Could not get disk size", disk_path=disk_path)
+                continue
             
-            # Transfer disk
-            transfer_success = ssh_client.rsync_transfer(
-                str(disk_file), remote_disk_path,
-                options=rsync_options, dry_run=job.dry_run
-            )
+            # Transfer disk using secure method for protected files
+            if not job.dry_run:
+                transfer_success = await self._secure_file_transfer(
+                    str(disk_file), remote_disk_path, ssh_client
+                )
+            else:
+                transfer_success = True
             
             if transfer_success:
                 result['files_backed_up'].append(f"disk:{remote_disk_path}")

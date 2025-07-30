@@ -124,26 +124,11 @@ class LibvirtManager:
             domain = self.conn.lookupByName(vm_name)
             
             with LogOperation(self.logger, "create_snapshot", vm_name=vm_name, snapshot_name=snapshot_name):
-                # Create snapshot XML
+                # Create snapshot XML (disk-only, no memory state)
                 snapshot_xml = f"""
                 <domainsnapshot>
                     <name>{snapshot_name}</name>
                     <description>Automated backup snapshot created at {datetime.now().isoformat()}</description>
-                    <memory snapshot='external'/>
-                    <disks>
-                """
-                
-                # Add disk snapshots
-                vm_xml = domain.XMLDesc()
-                root = ET.fromstring(vm_xml)
-                for disk in root.findall(".//disk[@type='file']"):
-                    target = disk.find("target")
-                    if target is not None:
-                        dev = target.get("dev")
-                        snapshot_xml += f'<disk name="{dev}" snapshot="external"/>'
-                
-                snapshot_xml += """
-                    </disks>
                 </domainsnapshot>
                 """
                 
